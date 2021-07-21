@@ -43,8 +43,25 @@ func dumper(inter int) {
 	}
 }
 
-var eth = make(map[string]int)
-var nxt = 1
+var netname = make(chan string)
+var ethnum = make(chan int)
+
+func memory() {
+	var eth = make(map[string]int)
+	var nxt = 1
+	for {
+		name := <-netname
+		port, ok := eth[name]
+		if ok {
+			ethnum <- port
+		} else {
+			eth[name] = nxt
+			ethnum <- -nxt
+			go dumper(nxt)
+			nxt = nxt + 1
+		}
+	}
+}
 
 func controler(conn net.Conn) {
 	defer conn.Close()
@@ -52,14 +69,12 @@ func controler(conn net.Conn) {
 	checkError(err)
 	toks := strings.Split(strings.Trim(string(res), "\n\t "), " ")
 	if len(toks) == 2 && toks[0] == "DUMP" {
-		port, ok := eth[toks[1]]
-		if ok {
+		netname <- toks[1]
+		port := <-ethnum
+		if port > 0 {
 			conn.Write([]byte(fmt.Sprintf("PORT %d\n", BASE_PORT+port)))
 		} else {
-			eth[toks[1]] = nxt
-			conn.Write([]byte(fmt.Sprintf("NEW PORT %d\n", BASE_PORT+nxt)))
-			go dumper(nxt)
-			nxt = nxt + 1
+			conn.Write([]byte(fmt.Sprintf("NEW PORT %d\n", BASE_PORT-port)))
 		}
 	} else {
 		conn.Write([]byte("SYNTAX ERROR\n"))
@@ -67,7 +82,7 @@ func controler(conn net.Conn) {
 }
 
 func main() {
-	fmt.Println(">>> Starting wire")
+	go memory()
 	ln, err := net.Listen("tcp", fmt.Sprintf(":%d", BASE_PORT))
 	checkError(err)
 	for {
