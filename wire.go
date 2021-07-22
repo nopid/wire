@@ -1,8 +1,8 @@
 package main
 
 import (
+    "bufio"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"net"
 	"os"
@@ -65,7 +65,7 @@ func memory() {
 
 func controler(conn net.Conn) {
 	defer conn.Close()
-	res, err := ioutil.ReadAll(conn)
+	res, err := bufio.NewReader(conn).ReadString('\n')
 	checkError(err)
 	toks := strings.Split(strings.Trim(string(res), "\n\t "), " ")
 	if len(toks) == 2 && toks[0] == "DUMP" {
