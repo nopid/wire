@@ -7,7 +7,7 @@ RUN go mod download
 RUN GOOS=linux go build .
 
 FROM alpine:latest
-RUN apk --no-cache add tcpdump
+RUN apk --no-cache add tcpdump bash
 WORKDIR /app
 COPY --from=builder /src/wire .
 CMD ["./wire"]  
