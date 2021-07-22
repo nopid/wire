@@ -1,7 +1,7 @@
 package main
 
 import (
-    "bufio"
+	"bufio"
 	"fmt"
 	"log"
 	"net"
@@ -85,7 +85,7 @@ func main() {
 	go memory()
 	ln, err := net.Listen("tcp", fmt.Sprintf(":%d", BASE_PORT))
 	checkError(err)
-    fmt.Println("READY")
+	fmt.Println("READY")
 	for {
 		conn, err := ln.Accept()
 		checkError(err)
