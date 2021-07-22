@@ -1,0 +1,5 @@
+Docker capture VM
+=================
+
+* To build:
+% docker buildx build --platform linux/amd64,linux/arm64 -t nopid/wire --push .
