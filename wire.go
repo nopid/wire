@@ -19,12 +19,13 @@ func checkError(err error) {
 }
 
 func launchdump(inter int, conn *net.TCPConn) {
+	eth := fmt.Sprintf("eth%d", inter)
 	var f *os.File
 	defer conn.Close()
 	f, err := conn.File()
 	checkError(err)
 	defer f.Close()
-	cmd := exec.Command("/usr/bin/tcpdump", "-s", "0", "-n", "-w", "-", "-U", "-i", fmt.Sprintf("eth%d", inter))
+	cmd := exec.Command("/usr/bin/dumpcap", "-s", "0", "-n", "-w", "-", "-i", eth)
 	cmd.Env = os.Environ()
 	cmd.Stdout = f
 	cmd.Stdin = nil
