@@ -34,9 +34,10 @@ func launchdump(inter int, conn *net.TCPConn) {
 	checkError(err)
 }
 
-func dumper(inter int) {
+func dumper(inter int, listening chan bool) {
 	ln, err := net.Listen("tcp", fmt.Sprintf(":%d", BASE_PORT+inter))
 	checkError(err)
+	listening <- true
 	for {
 		conn, err := ln.Accept()
 		checkError(err)
@@ -48,8 +49,9 @@ var netname = make(chan string)
 var ethnum = make(chan int)
 
 func memory() {
-	var eth = make(map[string]int)
-	var nxt = 1
+	eth := make(map[string]int)
+	listening := make(chan bool, 1)
+	nxt := 1
 	for {
 		name := <-netname
 		port, ok := eth[name]
@@ -57,8 +59,9 @@ func memory() {
 			ethnum <- port
 		} else {
 			eth[name] = nxt
+			go dumper(nxt, listening)
+			<-listening
 			ethnum <- -nxt
-			go dumper(nxt)
 			nxt = nxt + 1
 		}
 	}
